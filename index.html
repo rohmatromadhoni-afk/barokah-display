@@ -924,10 +924,16 @@ function inflateRaw(src) {
   function handlePayment(id, nominal) {
     if (!id) return;
     const last = load('bk-lastpay', null);
-    if (last === null) { save('bk-lastpay', String(id)); return; }   // pertama kali: jangan tampilkan yang lama
     if (String(id) === last) return;
     save('bk-lastpay', String(id));
     showPay(nominal);
+  }
+
+  // Cadangan dari Apps Script: saat pertama kali, cukup catat yang terakhir tanpa menampilkan
+  function pollPayment(d) {
+    if (!d || !d.id) return;
+    if (load('bk-lastpay', null) === null) { save('bk-lastpay', String(d.id)); return; }
+    handlePayment(d.id, d.nominal);
   }
 
   let es = null, pollTimer = null;
@@ -940,6 +946,8 @@ function inflateRaw(src) {
     if (conn.topic && window.EventSource) {
       try {
         es = new EventSource('https://ntfy.sh/' + encodeURIComponent(conn.topic) + '/sse');
+        es.onopen = () => setStatus('st-conn', 'Tersambung ke topik ntfy: ' + conn.topic);
+        es.onerror = () => setStatus('st-conn', 'Koneksi ntfy terputus, mencoba lagi...', true);
         es.onmessage = e => {
           try {
             const d = JSON.parse(e.data);
@@ -955,7 +963,7 @@ function inflateRaw(src) {
     if (conn.url) {
       const sep = conn.url.includes('?') ? '&' : '?';
       const poll = () => fetch(conn.url + sep + 'aksi=terakhir', { cache: 'no-store' })
-        .then(r => r.json()).then(d => d && handlePayment(d.id, d.nominal)).catch(() => {});
+        .then(r => r.json()).then(pollPayment).catch(() => { setStatus('st-conn', 'Cadangan Apps Script belum bisa dihubungi.', true); });
       poll();
       pollTimer = setInterval(poll, 15000);
     }
