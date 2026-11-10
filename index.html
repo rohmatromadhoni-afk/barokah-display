@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Harga Hari Ini - Toko Barokah Karangsari</title>
+<style>
+  :root {
+    --ink: #1a1d24; --muted: #6b7280; --blue: #2d7ff9; --green: #1fa460; --orange: #ff7a1a;
+    --red: #ef4444; --yellow: #ffd23f; --cream: #fff6e6; --mint: #eaf8ef; --line: #f1e3c6;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; color: var(--ink); overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #fff1a8 0%, #ffdc66 55%, #ffc83d 100%); }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,.45) 1.2px, transparent 1.2px); background-size: 3.2vh 3.2vh; }
+
+  /* ---------- Display ---------- */
+  .display { height: 100%; }
+  .display[hidden] { display: none; }
+
+  .card { position: relative; border-radius: 3.2vh; overflow: hidden; display: flex; flex-direction: column; min-height: 0;
+    background: #fff; box-shadow: inset 0 0.35vh 0 rgba(255,255,255,.9), inset 0 -0.6vh 0 rgba(0,0,0,.06),
+                0 1.6vh 2.6vh -0.6vh rgba(120,70,0,.35); }
+  @supports (corner-shape: squircle) { .card { border-radius: 4.2vh; corner-shape: squircle; } }
+
+  .head { display: flex; align-items: center; gap: 1.2vw; padding: 1.6vh 2vw; color: #fff; flex-shrink: 0; }
+  .head svg { width: 4.4vh; height: 4.4vh; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .head h2 { font-size: 3vh; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+  .head .hsub { font-size: 1.9vh; font-weight: 600; opacity: .92; margin-top: .4vh; }
+  .head .tag { margin-left: auto; background: rgba(255,255,255,.25); padding: .6vh 1.2vw; border-radius: 2vh; font-size: 2vh; font-weight: 700; white-space: nowrap; }
+  .hd-blue { background: var(--blue); } .hd-green { background: var(--green); }
+  .hd-orange { background: var(--orange); } .hd-mint { background: #17935a; }
+
+  .body { flex: 1; min-height: 0; position: relative; padding: 2vh 2vw; display: flex; flex-direction: column; }
+
+  .app { position: relative; height: 100%; display: grid; grid-template-rows: auto 1fr 1fr 6.5vh; gap: 2vh; padding: 2.2vh 2.2vw 0; }
+  header { display: flex; justify-content: space-between; align-items: center; }
+  .logo { height: 8vh; width: auto; display: block; }
+  .clockbox { text-align: right; line-height: 1; }
+  .clock { font-size: 7vh; font-weight: 900; color: var(--ink); }
+  .date { font-size: 3vh; font-weight: 700; color: var(--muted); margin-top: .8vh; }
+  .row { display: grid; grid-template-columns: 1.25fr 1fr; gap: 2vw; min-height: 0; }
+
+  /* Harga hari ini */
+  .harga .body { background: var(--cream); justify-content: center; }
+  .slide { position: absolute; inset: 1.6vh 1.6vw 2.6vh; display: flex; flex-direction: column; justify-content: center;
+    transform: translateX(100%); opacity: 0; transition: transform .8s cubic-bezier(.6,.05,.2,1), opacity .8s; }
+  .slide.on { transform: translateX(0); opacity: 1; }
+  .slide.out { transform: translateX(-100%); opacity: 0; }
+  .pname { font-size: min(4.2vh, 7vw); font-weight: 800; text-transform: uppercase; }
+  .pcat { font-size: 2.2vh; color: var(--muted); margin-top: .4vh; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4vw; margin-top: 1.8vh; }
+  .cell { background: #fff; border-radius: 2vh; padding: 1.2vh 1.2vw; box-shadow: inset 0 -0.4vh 0 rgba(0,0,0,.06); }
+  .cl { font-size: 2.2vh; color: var(--muted); font-weight: 700; }
+  .np { font-size: min(4.6vh, 7vw); font-weight: 800; color: #fff; background: var(--orange); border-radius: 1.4vh; padding: .8vh 1vw; margin-top: .8vh; text-align: center; white-space: nowrap; }
+  .empty-msg { font-size: 2.6vh; color: var(--muted); }
+  .progress { position: absolute; left: 0; right: 0; bottom: 0; height: .6vh; background: var(--line); }
+  .progress i { display: block; height: 100%; width: 0; background: var(--orange); }
+  .progress i.run { animation: fill 10s linear forwards; }
+  @keyframes fill { from { width: 0; } to { width: 100%; } }
+  .dots { position: absolute; right: 2vw; top: 2vh; display: flex; gap: .8vh; }
+  .dots i { width: 1.2vh; height: 1.2vh; border-radius: 50%; background: var(--line); }
+  .dots i.on { background: var(--orange); }
+
+  /* Promo */
+  .promo .body { background: var(--cream); justify-content: flex-start; padding-top: 2.4vh; }
+  .promo .pn { font-size: min(4.2vh, 7vw); font-weight: 800; text-transform: uppercase; }
+  .promo .old { font-size: 2vh; color: var(--muted); text-decoration: line-through; }
+
+  /* Top poin */
+  .top .body { padding: 1.4vh 1.6vw; }
+  .top-cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 1.4vw; height: 100%; }
+  .top-col { display: grid; grid-auto-rows: 1fr; min-width: 0; overflow: hidden; }
+  .tr { display: flex; align-items: center; gap: .8vw; font-size: min(2.6vh, 3.4vw); border-bottom: 1px solid var(--line); min-width: 0; }
+  .tr:last-child { border-bottom: 0; }
+  .tr .n { width: min(3.4vw, 4.4vh); flex-shrink: 0; font-weight: 800; color: var(--orange); }
+  .tr .nm { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tr .pt { font-weight: 800; white-space: nowrap; }
+
+  /* Info */
+  .info .body { background: var(--mint); justify-content: center; gap: 3.4vh; }
+  .info-body .it { align-items: flex-start; gap: 1.2vw; }
+  .info-body .it > div { flex: 1; min-width: 0; text-align: left; }
+  .info-body .it b { display: block; font-size: 2.8vh; margin-bottom: .6vh; }
+  .info-body .it span { display: block; font-size: 2.4vh; line-height: 1.45; color: #374151; }
+  .info-body .it svg { margin-top: .3vh; }
+  .it { display: flex; align-items: flex-start; gap: 1vw; font-size: 2.6vh; }
+  .it svg { width: 4vh; height: 4vh; flex-shrink: 0; fill: none; stroke: #17935a; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; margin-top: .2vh; }
+  .it b { display: block; }
+  .soon { margin-top: auto; background: #fff; border-radius: 2vh; padding: 1.4vh 1.4vw; display: flex; align-items: center; gap: 1.2vw; }
+  .qbox { width: 11vh; height: 11vh; border: 2px dashed #b8c2cc; border-radius: 1.4vh; display: flex; align-items: center; justify-content: center; color: #9aa4b1; font-weight: 800; font-size: 2.2vh; flex-shrink: 0; }
+  .soon .st { font-size: 2.8vh; font-weight: 800; color: var(--orange); }
+  .soon .sd { font-size: 2.2vh; color: var(--muted); }
+
+  .ticker { background: var(--orange); color: #fff; overflow: hidden; display: flex; align-items: center; margin: 0 -2.2vw; box-shadow: 0 -0.6vh 2vh rgba(120,70,0,.3); }
+  .ticker span { white-space: nowrap; font-size: 2.6vh; font-weight: 700; animation: run 34s linear infinite; }
+  @keyframes run { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+
+  /* ---------- Picker (#pilih) ---------- */
+  .picker { height: 100%; background: #fff; display: flex; flex-direction: column; padding: 2.4vh 2.4vw; gap: 1.6vh; overflow: hidden; }
+  .picker[hidden] { display: none; }
+  .picker h1 { font-size: 3.4vh; font-weight: 800; }
+  .picker .hint { font-size: 2vh; color: var(--muted); }
+  .bar2 { display: flex; gap: 1vw; align-items: center; flex-wrap: wrap; }
+  .search { flex: 1; min-width: 26vw; font-size: 2.4vh; padding: 1.4vh 1.2vw; border: 2px solid #e2e8f0; border-radius: 1.6vh; }
+  .chips { display: flex; gap: .8vw; flex-wrap: wrap; }
+  .chip { font-size: 2.1vh; padding: .9vh 1.4vw; border-radius: 3vh; border: 2px solid #e2e8f0; background: #fff; cursor: pointer; font-weight: 600; }
+  .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .plist { flex: 1; min-height: 0; overflow-y: auto; border: 2px solid #eef2f6; border-radius: 2vh; }
+  .prow2 { display: flex; align-items: center; gap: 1.2vw; padding: 1.4vh 1.6vw; border-bottom: 1px solid #eef2f6; font-size: 2.5vh; cursor: pointer; }
+  .prow2 input { width: 3vh; height: 3vh; accent-color: var(--orange); }
+  .prow2 .nm { flex: 1; font-weight: 600; }
+  .prow2 .cat { font-size: 2vh; color: var(--muted); width: 14vw; }
+  .prow2 .pr { font-size: 2.2vh; color: var(--muted); width: 20vw; text-align: right; }
+  .pfoot { display: flex; align-items: center; gap: 1.2vw; justify-content: space-between; }
+  .pfoot .cnt { font-size: 2.4vh; font-weight: 700; }
+  .btn { font-size: 2.4vh; font-weight: 700; padding: 1.4vh 2.4vw; border-radius: 1.6vh; border: 0; cursor: pointer; }
+  .btn.pri { background: var(--orange); color: #fff; }
+  .btn.sec { background: #eef2f6; color: var(--ink); }
+
+  @media (orientation: portrait) {
+    html, body { overflow-y: auto; }
+    .app { height: auto; min-height: 100%; grid-template-rows: auto auto auto auto auto; }
+    .row { grid-template-columns: 1fr; }
+    .harga, .promo, .top, .info { min-height: 42vh; }
+    .top-cols { grid-template-columns: 1fr; }
+    .clock { font-size: 9vw; }
+    .prow2 .cat { display: none; }
+  }
+
+  .sel { font-size: 2.2vh; padding: 1.2vh 1vw; border: 2px solid #e2e8f0; border-radius: 1.6vh; background: #fff; }
+  .pline { display: flex; gap: .8vw; align-items: center; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .pline label { font-size: 2vh; color: var(--muted); display: flex; align-items: center; gap: .4vw; }
+  .pline input { width: 13vh; font-size: 2.2vh; padding: .8vh .6vw; border: 2px solid #e2e8f0; border-radius: 1.2vh; }
+  .adm { border: 2px solid #eef2f6; border-radius: 2vh; padding: 2vh 2vw; display: flex; flex-direction: column; gap: 1.2vh; }
+  .adm h3 { font-size: 2.8vh; font-weight: 800; }
+  .adm p { font-size: 2.2vh; color: var(--muted); }
+  .adm input[type=file] { font-size: 2.2vh; }
+  .status { font-size: 2.4vh; font-weight: 700; color: #17935a; }
+  .status.err { color: var(--red); }
+  .adm-row { display: flex; gap: 1.2vw; flex-wrap: wrap; align-items: center; }
+  .tr .pt { flex-shrink: 0; text-align: right; white-space: nowrap; }
+  .more { font-size: 2vh; color: var(--muted); padding: 1vh 0; text-align: center; }
+  .clock { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .pay { position: fixed; inset: 0; z-index: 100; background: rgba(17,24,39,.92); display: flex; align-items: center; justify-content: center; }
+  .pay[hidden] { display: none; }
+  .pay-box { background: #fff; color: var(--ink); border-radius: 4vh; padding: 6vh 6vw; text-align: center; max-width: 80vw;
+    box-shadow: 0 2vh 4vh rgba(0,0,0,.4); animation: pop .35s ease-out; }
+  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .pay-ic { width: 14vh; height: 14vh; border-radius: 50%; background: var(--green); color: #fff; font-size: 8vh; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 3vh; }
+  .pay-t { font-size: 5vh; font-weight: 900; }
+  .pay-s { font-size: 2.8vh; color: var(--muted); margin-top: 1.4vh; }
+  .pay-n { font-size: 8vh; font-weight: 900; color: var(--green); margin-top: 1.4vh; line-height: 1.1; }
+</style>
+</head>
+<body>
+
+<!-- ============ DISPLAY ============ -->
+<div class="display app" id="display">
+  <header>
+    <img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABE4AAADWCAYAAADPRsexAAASyUlEQVR42u3dS24jya4AUFvQKgx45v2vqGYF1Dbcg3uNdqskOT/xYZDnAHfyXsOVGR+SQWVKLy8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQwWvUC3t7//g0PfTw5/evV6MAAADAFuEOkBomjKSJAgAAwDMhDo2aJUSgiQIAAMCtqQdFDRMi0kABAADgy5QDooYJK9BAAQAAYOjBUMOEFWmgAAAA1HUZ9Q9pmrAqaxcAAKCu7p+kO3SShSdPAAAA6ul6ENQ0ISMNFAAAgDq6vaqjaUJW1jYAAEAdXRonDpZkZ40DAADU0PyVgxEHSq9KYC0CAAAwQtNDX6+DqsMp1icAAAAzNDvwtT6UOozSk/UKAADAFk0Oey0PoQ6gjNRq7Vq3AAAAOYVpnDh4MpM1DAAAwD2nf1XHgZMMWqxBv7QDAACQz6nGiaYJmWieAAAAcOsy8x/XNCEaaxIAAIDvDjdOzn6y7oBKVGfXpqdOAAAA8pjyxImmCdFZowAAALy8HGycnPlE3YGUVZxZq546AQAAyGHoEyeaJqzGmgUAAKhtd+PEJ+kAAABAFcOeOPHJPas6unY1GQEAANa3q3Fy9CCoaQIAAACs6GII4GeeOgEAAKhJ4wQAAADgge6NE6/pkIW1DAAAUI8nTgAAAAAeuG79D31XAxzz9v7x6WmVWjHk7HyvOlat1nmL+++951rOUdX1MmKexLV8c9F6zCPcd7b8OHpMq+fMVXJnpLwpDq1Ze82+Zk+cQKEin/iBfOUCusW1t7r/nuMYZY7e3j8+Vz9wrXwP2Q67K8xFj+ubfc8ZP1QYtZZWj4Etr7/a3p15v+JQjPuYcc1dGycOmUDWwlABmPs+oq/ljId2UcAerthgsJaMnbzpjCkPrsETJwAKJve1SFGTucDOfniw3t2rtSROVFuH6gD7PRONEwDJxT1Oug9PZmL/ipXWknWQ8R7lTWs8G40TAFig+KtSUCkczYf7NMaV5yfLa7sR8ia0pHECoDByr8GLv2qHOodY82EtWEvGybW7LyK5ZF3Yt/8z1YDk654jXLOmifsGOVAsoG/ulPto7ZJtoT1abBoogITo3gH7V4zCelzrmmc3TcQGXl4SNU62LmgLH4CqxZ95wPyjbrcH5E3zzn6XiovLYgRgheJPvkIxD8ib4h7zXapuVJsAQAFSqfgD1IfmAvMEx/hVHQAAHMaAMPu0+gcOYmA8FwsSADxtAqgPIYIoeVMs4DtPnABlEiCMLo6sfXBYAftU3hQL16dxAgxRJRH++f3rVdJXmCj+AJA3182bmhbcutr4H5+KWxij5V5rmdBWjQGjrjtz8VCpaTLymhSccebGXNSpD3tf7+prSc50f3CGJ04AFIBlD0bmBhzK5ASxzTjN35/Wl5gYncYJAOWKGU0TwIFFHiPGfog2P/Y+9yzfOBEIAQAczABnObGRXjxxAoACRPEHOLCAvAkPpGic2HQAKP4AoG2OrNY81CzlkTRPnJwpWm0QAMXQjPwDqMUg6nnKl8GKkfzLqzoAKDgAxA+s9SFrPWrTxF7nGY0TAFIXEj4xAzEG2LcnPaUZ717Fyrk0TixEAIWf4g+1TarDiv0J8eJG5H3Z+r7FoHy57WroAUBBRL0iMOO673WNb+8fn/Y9QJ6ctleqJ04kNADkGlBgA3JnhHv1uk4eXtUBAIUfLL/2b6/RgQXED3ubVryqc7NpWm5sm9DBBBCbAHUSyJ3uN+qZlW0uFmufxawYOD9+xhCQW8D6j1ajuC4QO4xDPV7VkbjCj6cxBYBcBf+oX7CocmBxMMOadHajL40TG8/YAjiQAOoktRh0qhd859L6fMfJnUWoSI5dFJgfAFAX7TnMtDxkRB0TBymwZ+gn5RMnM5KZjWesATEH7IHxf88HKoDYTG9e1QEAxQnYA8YD7JGDtjRwNXnXpnFio5sjAHEHltxHWw8iDiwgb8rpnKFxgmAMAMi7gLhxwMzGrLg8jsZJgg0DgAIFou+BbPtHPAB7xZmxjotFiUAMIO4AqNOpkDs1cTnCzxE3TgIWLkCNAlDhDw4MYgGstV96xAznvxo0ThpvbM0TAHkCjtQPKx0UHCwAuZNKUjdOZjUxvoKBIgFAAQhb64ZV6iHrnsjrHdQjuff4rDO2J04khhAbXQEHsWPZio3g27igmQ1kP7CojWk5R73y5qw9ow5Ql57hV3WQRAGxRiEGDiuo98zR66g5ExeM6Wo0Tiw+yRRAvgDEAHUeQ+fOvmElF5sdAAWgAhDsC9Ti9mvWORSLOMsTJ0jIQKliQ8wA6B9nv/5nNOTOSjWGmi0vjRNsckABKJaB/eB+Q8dXc2PvmH9m8qs6AJQt7nsUU35hAwdjVpgXh0mi5E25kxVcqmzyM5vYMgGQH+QOIOrePxLLxD8i5c1ea6fierQH+/CqDktvbp1p7BvMEYD4597H8UXrVORVHQDFWWlVHj22Xuzlkeu6+sF5lQ92esY/+0zurLCHxKE6NE4E61MB08wCCkDFCyD+iX3WjvMXmV0qbexZmy7rpn17//icOTaSMRAlTwAOKyuPge87wdoRh3jOd5xYsO4RQJyEcge9P79/vWqYgtzZO97c/s/MrsmrOjY7AN8KHK/sQKzap8e++f43K33Px4z4J/ZZOzPWT+RY9OzviEVxXaptalMep1Dymg7ULK4qX6OCCPu4zj2tuN+9doG4kOv+7L12vKrTadFZpAAKJMBeNObmvsrcR2m8rXwOs+7j0jgBgIH2FHQKKLKubQcW6wNr0voxdivROAFQBLn3wderiFl7zVSev5FzkiFerrpWojw5oHFg7UTYT9YhLy8aJyxYSAheoJCqVABWjXlivQYBOfegtZI/Bs689iy/xGNc4inXODmzEC04wIGw3v1GuH5rBvPiwCL+2WvuYfx+ko/44okTmwyYFCMcQtyH7zuRPzPMyyo/QUwcXtlxrz3WT6YPua2DeDROGL65vaYD4gLHYqKfe8S8uN8s46F5kv8eV/++k2zz4e2Jc0o2TkZtAp8OAlv2T8Y95J6Mbeb7qpTfZ9yrusKar7g2xHYyjF3m+fbEyU6644IhZDqgRLuP6GMQ6fCQ6TUoucScVNzrfmnM+qyy3zQAyDDPXV+viLzgZrwu4r27eWM/e+0Ivrn2cuR7ylJkRJ/XlnPU4nqtGXt15dweeT2MuK/V8lirdd/q2n35bptxyJI7M8aiEXtu1XEbGT81TgoWesZ9/D1YMwAAAGsq+6qOgywAAADwE99xcoBvJAYAAIAaNE4YRsMJAACA1WicsASvVgEAADCDxgkAAADAA6UbJ55iAAAAAJ7xxMlBvq9j3HhpcAEAADCLxsmkZoBxAgAAgPg0Tk7SFDA+AAAA5HWtPgB/fv96PXu41xzoOz9GAQAAgFk8cQIAAADwgMYJAAAAwAMaJy9eBzEvAAAAcJ/GCQAAAMADGicAAAAAD2ic/J/XQswHAAAA3NI4AQAAAHhA4+QbTzmYBwAAAPhO48Sh3fgDAADAAxonDu/GHQAAAB64GoLHh/i3949PIzFuvI0CwLpuc6a4DohtQBYaJxsP85oofccXADEdQGwDItI42Rk0NVAkIAAAAOrQOHHoBwAAAB7QOAGAgjxBCbA2H+jCOBonAJCQxghA3TivqQJtaZwAQIEiGoCa+UATBc7TOAGARAUyANzLERoocJzGyeACdtWA5VFAgLViMwDcyxlqd9hP42Rw8bpawNpyXx4FBIiZcwDgXg5Rs8M+F0Mwp4B9e//4jFz4Hr0+xTxAvJwDAHIJHOeJk8kBJ2LH9+x9eQwQQKFLH3ty6/caw9oBVjiHQFS7km/P5F69eI0yVlnva/YYSUrAzPgsBgHIEXIEHOeJk0DBbnbQ8mkUQI6CWBEMUMtt3N+TNzx5Aj/zHScDClhjBcCoOKr4BWBvLlCzw3Ne1QnWCJg1ZlnvK8pYOcgAvePNCq98ioVA9jgdMc6tmEsgGk+cAMACxfgKhe5P1+wTTSB7nI74y5l7v1TazMLfNE4WLpRX/jcBGF8QAzCmfl65eQL8TeOkYYDE2AGMjJmRCmFxHiB2XNyaM8Rz+JvGCQAsWGj79BAgdpyOSPMEjtE4AYCkhS8AyCFwnsYJAASx5RM+BS/AXFvjcOR4LZfAPhonAAAA/IfXdeBfGic76MwCIA8B8Cwe//n963WFeC2nwHYaJwjMAAH4ZA9gvfr2e427SsNkT40uN8H/XA3BWsGr178pKALID9U8yn0Vx9pYnB+v2WMVaQ4jjo/4DJyhcXIgMGoySCYAjD38tcopW3L47X/zKPefuZZn1/H1d3t+WfDWWubrv3t2Tb3HYc/19qw5frqG7///LXPY4lqPrOce47T3Omaup5Yxpne8AuJoFhgqBYtejZOon1Ssfl8RxkniBLIX32cPtnti65HxiJTjWl5LlLGINCet90zE62xxTaMaN1n3VbZfQdMEgud8x0mQRkCEYJT1vgBYu2CP/PdXegr17f3js9f17v27q8x5xPmNcm/2FVCJxkmAhkCk5kLW+wKQb2qOR7QDWOYDYbaxztw0qbAeAVrSOJlczEYsiLPeFwBrH7ZXb5pkOnBnv+8KTZMzf3fE+Ni/QCRdGycVAt6Znx2L3Fw4c22ZmyaSOCCuzLl3DXnsSeNDzNofKvCrOo2DTaYvitpzTwIuAL0OX/KLg+7Z+7eGADhjc+PEz/AeK+4yJOt796SQPT5+AA7xsWP1KvVOr/yy94OTGfcc6bWVaON1b130/lnkFdeSug3Yo/sTJ9W7/Bnvvep8ahwC5Ms59/5+zw+L9v7tVt87duSJ2EiH3nvXNvu6Io/X1jVwZH1tGfsVxkaDBNjDl8MCACGdPdh8fQ/Zo7/z7O9HOFSN/KW7yGNxZP5mzs3s8Xr0s9Pf98OZ7+g7c/9RmhWaJsBevuMENhYhRsE8g4I71zh79fS/Y5H1l/5m5IAIT8S0esJk7z1Gz6X2u7oLtcER170XevQnywQpbG4kb2BG7Pxpf0f+Lo+RMe5RI0l8zJPbWzYLrQusHyq5jtwcDpEI7JhjMqwX+WyNQ6m9fWwcjFudNXF0v626RsRuUIMdtfs7TgQcFJv2CkDEuAuZ9agrjj5JbjaAaoZ+OaxAC1QpRrFemFsvqDmOj0OrLxBljfizZ43YV0DVGuwy+oIFXCoU7gpNgHXi971fG6kYxx/dt5y2xjyRq5Z0AIZYpvyqjvfDkeiInMDNP4q8GHF4xJibV+Owah37dQ2tntAa9fPXciw91jDyU2/XMzdwZpFrnhC5IDIKArRRAAdU6sX+VjXAyFpitV9BivBTzai7YK/rzH9cQUTEIl3wB4gVl3vFVfE6XhOA/fNxu46jN1KsJ2BFp74cttVvwAugREjimiYA/UX6foZncV9tYhyO1A2969pH/6b1FDfe2S2Qw+knTlo9bnf29+RBEgdWLawrxqE9993zqRM54O9xqPwqxd57HzlOWxp9UZ42sa+AbK7RLsjrO6ya1K1bgBj1ge9QcOitOifmDvse+ri0+COtD4xfjznawPRICj3WlqYJQP/YqS6Qn7BOAGa4tPpDPR+h1Ugh8vpRbAC945gDm9hM7SZClGuyr4Cqmr6qM+LRWM0TFDIA+WJphO87Mb5UHLO9+8l6Uu9CRRcbC6x1IHY8qXBI2RNTt46HOG0sMo1Zj+s5+jetp1w0wuBnlx5/VDBFMQUgLrouY9H7WnrfU8TmSZSxs7eASroGPN1LFJ4A7XLmCvHn2X1suf6e47CnLtn6s649rmXEPB8di9bX3ervjRjPHnXt2Ws7ck091tfRp8CirqdV9vGo+VP7QufGSc9EAzNIHIDiNeeYVx/b72vPOnu+J1s1AHuO9cx1fXvv1pO8Axm8RtmUEJmkAShgwX7cshfPPNkEkXKONQr/uoz6h1q+kwkjWbfASkUu0H+vvb1/fN7+N/f+b6AGhhymbAZJBckC4HiOFJ9g/TrVPkaugXVcZx5INVCISJIAAEA9DHy5zN6QNiWREoT1CKxQrPrgARxK4Sg5BPZ7tZFRuACsmQvFMFivHrVvib62rVH422uWDQ6SAFDx4Ca2wVr1pz1L5DVtfcJ9NgYALH5wU+jC3D24lb1K9HVsjcJ9F0MAAA53QL9DpO9RY4X8YI3CYzYHACQpehW+4BAK1iu0Z4MAQKLiVxEMIGfIF9CWTQIACQthBTGAPCFHQBs2CgAkLooVygByglwA59gsAFCoUAYATRPYx4YBgAVpoABwhKYJ7GfTAMCiNE8A2ErDBI6zeQBgcRooADyjaQLn2EAAkIQGCgBfNEugHZsJAJLRQAGoS8ME2rOpACAxTRSA/DRLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADjvH3O+l8b/3OA1AAAAAElFTkSuQmCC" alt="Toko Barokah Karangsari">
+    <div class="clockbox">
+      <div class="clock" id="clock"></div>
+      <div class="date" id="date"></div>
+    </div>
+  </header>
+
+  <div class="row">
+    <section class="card harga">
+      <div class="head hd-green">
+        <svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg>
+        <h2>Harga hari ini</h2>
+      </div>
+      <div class="body" id="carousel">
+        <div class="dots" id="dots"></div>
+        <div class="progress"><i id="bar"></i></div>
+      </div>
+    </section>
+
+    <section class="card promo">
+      <div class="head hd-orange">
+        <svg viewBox="0 0 24 24"><path d="M3 10v4h4l7 4V6L7 10H3z"/><path d="M18 8.5a5 5 0 0 1 0 7"/></svg>
+        <div>
+          <h2>Promo hari ini</h2>
+          <div class="hsub">Harga bisa berubah sewaktu waktu</div>
+        </div>
+      </div>
+      <div class="body" id="promo-carousel">
+        <div class="dots" id="promo-dots"></div>
+        <div class="progress"><i id="promo-bar"></i></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="row">
+    <section class="card top">
+      <div class="head hd-blue">
+        <svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5a3 3 0 0 0 3 4"/><path d="M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4"/><path d="M9 20h6"/><path d="M8 17h8"/></svg>
+        <h2>Pelanggan dengan poin tertinggi</h2>
+      </div>
+      <div class="body">
+        <div class="top-cols" id="top-list"></div>
+      </div>
+    </section>
+
+    <section class="card info">
+      <div class="head hd-mint">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+        <h2>Info lainnya</h2>
+      </div>
+      <div class="body info-body">
+        <div class="it">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <div>
+            <b>Jam operasional</b>
+            <span>Buka setiap hari pada jam 06:00 - 21:00</span>
+          </div>
+        </div>
+        <div class="it">
+          <svg viewBox="0 0 24 24"><polygon points="12 3 14.9 9 21.5 9.8 16.7 14.3 18 20.8 12 17.5 6 20.8 7.3 14.3 2.5 9.8 9.1 9"/></svg>
+          <div>
+            <b>Info sistem poin</b>
+            <span>Setiap belanja Rp 100.000 dapat 1 poin, berlaku kelipatan. Total poin anda bisa dilihat pada nota belanja.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="ticker"><span>Terima kasih sudah berbelanja dan menjadi pelanggan setia Toko Barokah Karangsari &nbsp;● &nbsp;Dan Allah sebaik-baik pemberi rezeki - Al Jumu'ah:11</span></div>
+</div>
+
+<!-- ============ PILIH HARGA (#pilih) ============ -->
+<div class="picker" id="scr-pilih" hidden>
+  <h1>Pilih produk harga hari ini</h1>
+  <div class="hint">Centang produk yang mau tampil di layar. Pilihan tersimpan di tablet ini.</div>
+  <div class="bar2">
+    <input class="search" id="s1" type="search" placeholder="Cari produk…">
+    <select class="sel" id="m1"></select>
+  </div>
+  <div class="chips" id="c1"></div>
+  <div class="plist" id="l1"></div>
+  <div class="pfoot">
+    <span class="cnt" id="n1"></span>
+    <div style="display:flex;gap:1vw">
+      <button class="btn sec" onclick="location.hash=''">Batal</button>
+      <button class="btn sec" id="b1clr">Kosongkan</button>
+      <button class="btn pri" id="b1save">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROMO (#promo) ============ -->
+<div class="picker" id="scr-promo" hidden>
+  <h1>Pilih produk promo</h1>
+  <div class="hint">Centang barang promo. Isi harga coret (harga normal) dan harga promo di sebelah kanan.</div>
+  <div class="bar2">
+    <input class="search" id="s2" type="search" placeholder="Cari produk…">
+    <select class="sel" id="m2"></select>
+  </div>
+  <div class="chips" id="c2"></div>
+  <div class="plist" id="l2"></div>
+  <div class="pfoot">
+    <span class="cnt" id="n2"></span>
+    <div style="display:flex;gap:1vw">
+      <button class="btn sec" onclick="location.hash=''">Batal</button>
+      <button class="btn sec" id="b2clr">Kosongkan</button>
+      <button class="btn pri" id="b2save">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ IMPORT DATA (#admin) ============ -->
+<div class="picker" id="scr-admin" hidden>
+  <h1>Import data</h1>
+  <div class="hint">Pilih file Excel (.xlsx) dari Qasir. Data langsung tersimpan di tablet ini.</div>
+
+  <div class="adm">
+    <h3>1. Katalog produk</h3>
+    <p>File "Katalog Produk" dari Qasir. Harga modal tidak diambil.</p>
+    <input type="file" id="f-cat" accept=".xlsx">
+    <div class="status" id="st-cat"></div>
+  </div>
+
+  <div class="adm">
+    <h3>2. Pelanggan dan poin</h3>
+    <p>File "Pelanggan" dari Qasir yang berisi kolom Poin. Nomor telepon tidak ditampilkan di layar.</p>
+    <input type="file" id="f-pts" accept=".xlsx">
+    <div class="status" id="st-pts"></div>
+  </div>
+
+  <div class="adm">
+    <h3>3. Koneksi notifikasi pembayaran</h3>
+    <p>Topik ntfy dan alamat Apps Script. Kosongkan kalau tidak dipakai. Ketuk layar sekali setelah halaman dibuka supaya suara aktif.</p>
+    <input type="text" id="c-topic" placeholder="Topik ntfy (acak dan panjang)" style="font-size:2.2vh;padding:1vh 1vw;border:2px solid #e2e8f0;border-radius:1.2vh">
+    <input type="text" id="c-url" placeholder="Alamat Apps Script (https://...)" style="font-size:2.2vh;padding:1vh 1vw;border:2px solid #e2e8f0;border-radius:1.2vh">
+    <div class="adm-row"><button class="btn pri" id="b-conn">Simpan koneksi</button></div>
+    <div class="status" id="st-conn"></div>
+  </div>
+
+  <div class="adm">
+    <h3>4. Menu lainnya</h3>
+    <div class="adm-row">
+      <button class="btn pri" onclick="location.hash='#pilih'">Pilih harga hari ini</button>
+      <button class="btn pri" onclick="location.hash='#promo'">Atur promo</button>
+      <button class="btn sec" onclick="location.hash=''">Kembali ke layar utama</button>
+    </div>
+  </div>
+
+  <div class="adm">
+    <h3>5. Ganti PIN admin</h3>
+    <div class="adm-row">
+      <input type="password" id="pin-baru" inputmode="numeric" placeholder="PIN baru (4-6 angka)" style="font-size:2.2vh;padding:1vh 1vw;border:2px solid #e2e8f0;border-radius:1.2vh">
+      <button class="btn sec" id="b-pin">Simpan PIN</button>
+    </div>
+    <div class="status" id="st-pin"></div>
+  </div>
+
+  <div class="adm-row">
+    <button class="btn sec" id="b3clr">Hapus semua data di tablet ini</button>
+  </div>
+</div>
+
+<div class="pay" id="pay" hidden>
+  <div class="pay-box">
+    <div class="pay-ic">✓</div>
+    <div class="pay-t">Pembayaran QRIS diterima sebesar</div>
+    <div class="pay-n" id="pay-n"></div>
+    <div class="pay-s">Terima kasih</div>
+  </div>
+</div>
+
+<script>
+// Pembaca .xlsx ringan tanpa library luar (zip + inflate + xml sederhana)
+function xlsxRows(buf) {
+  const u8 = new Uint8Array(buf);
+  const dv = new DataView(buf);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('bukan file zip');
+  const count = dv.getUint16(eocd + 10, true);
+  let p = dv.getUint32(eocd + 16, true);
+  const dec = new TextDecoder('utf-8');
+  const files = {};
+  for (let n = 0; n < count; n++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) throw new Error('zip rusak');
+    const method = dv.getUint16(p + 10, true);
+    const csize = dv.getUint32(p + 20, true);
+    const nlen = dv.getUint16(p + 28, true), elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true);
+    const loff = dv.getUint32(p + 42, true);
+    const name = dec.decode(u8.subarray(p + 46, p + 46 + nlen));
+    p += 46 + nlen + elen + clen;
+    const lnl = dv.getUint16(loff + 26, true), lel = dv.getUint16(loff + 28, true);
+    const start = loff + 30 + lnl + lel;
+    const raw = u8.subarray(start, start + csize);
+    if (name.startsWith('xl/worksheets/') || name === 'xl/sharedStrings.xml' || name === 'xl/workbook.xml' || name === 'xl/_rels/workbook.xml.rels') {
+      files[name] = method === 0 ? raw : inflateRaw(raw);
+    }
+  }
+  const txt = k => files[k] ? dec.decode(files[k]) : '';
+  const unesc = s => s.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-fA-F]+);/g, (m, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (m, d) => String.fromCodePoint(+d)).replace(/&amp;/g, '&');
+
+  // shared strings
+  const sst = [];
+  const sstXml = txt('xl/sharedStrings.xml');
+  const siRe = /<si>([\s\S]*?)<\/si>/g; let m;
+  while ((m = siRe.exec(sstXml))) {
+    let s = ''; const tRe = /<t[^>]*>([\s\S]*?)<\/t>/g; let t;
+    while ((t = tRe.exec(m[1]))) s += unesc(t[1]);
+    sst.push(s);
+  }
+
+  // pilih sheet pertama dari workbook
+  let sheetPath = null;
+  const wbXml = txt('xl/workbook.xml'), relXml = txt('xl/_rels/workbook.xml.rels');
+  const firstSheet = (wbXml.match(/<sheet\b[^>]*r:id="([^"]+)"/) || [])[1];
+  if (firstSheet) {
+    const relRe = /<Relationship\b[^>]*>/g; let r;
+    while ((r = relRe.exec(relXml))) {
+      if (new RegExp('Id="' + firstSheet + '"').test(r[0])) {
+        let tg = (r[0].match(/Target="([^"]+)"/) || [])[1] || '';
+        tg = tg.replace(/^\//, '');
+        sheetPath = tg.startsWith('xl/') ? tg : 'xl/' + tg;
+      }
+    }
+  }
+  if (!sheetPath || !files[sheetPath]) {
+    const names = Object.keys(files).filter(n => n.startsWith('xl/worksheets/')).sort();
+    sheetPath = names[0];
+  }
+  if (!sheetPath) throw new Error('tidak ada sheet');
+
+  const sheetXml = dec.decode(files[sheetPath]);
+  const rows = [];
+  const rowRe = /<row\b[^>]*>([\s\S]*?)<\/row>/g; let rm;
+  let seq = 0;
+  while ((rm = rowRe.exec(sheetXml))) {
+    seq++;
+    const rowTag = rm[0].slice(0, rm[0].indexOf('>') + 1);
+    const rNum = +((rowTag.match(/\sr="(\d+)"/) || [])[1] || seq);
+    const arr = rows[rNum - 1] || (rows[rNum - 1] = []);
+    const cRe = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g; let cm;
+    while ((cm = cRe.exec(rm[1]))) {
+      const attrs = cm[1], inner = cm[2] || '';
+      const ref = (attrs.match(/\sr="([A-Z]+)\d+"/) || [])[1];
+      if (!ref) continue;
+      let col = 0; for (const ch of ref) col = col * 26 + (ch.charCodeAt(0) - 64);
+      col -= 1;
+      const t = (attrs.match(/\st="([^"]+)"/) || [])[1];
+      let val = '';
+      const vm = inner.match(/<v>([\s\S]*?)<\/v>/);
+      if (t === 's' && vm) val = sst[+vm[1]] || '';
+      else if (t === 'inlineStr') { const ims = inner.match(/<t[^>]*>([\s\S]*?)<\/t>/); val = ims ? unesc(ims[1]) : ''; }
+      else if (t === 'str') val = vm ? unesc(vm[1]) : '';
+      else if (t === 'b') val = vm ? (vm[1] === '1' ? 'TRUE' : 'FALSE') : '';
+      else if (t === 'e') val = '';
+      else if (vm) { const n = Number(vm[1]); val = isNaN(n) ? unesc(vm[1]) : n; }
+      arr[col] = val;
+    }
+  }
+  // isi sel kosong dengan ''
+  const width = Math.max(0, ...rows.map(r => r ? r.length : 0));
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] || [];
+    for (let c = 0; c < width; c++) if (r[c] === undefined) r[c] = '';
+    rows[i] = r;
+  }
+  return rows;
+}
+
+// Inflate (DEFLATE mentah), mengikuti algoritma puff
+function inflateRaw(src) {
+  let pos = 0, bitbuf = 0, bitcnt = 0;
+  let outBuf = new Uint8Array(Math.max(1024, src.length * 4)), op = 0;
+  const ensure = n => {
+    if (op + n > outBuf.length) {
+      const nb = new Uint8Array(Math.max(outBuf.length * 2, op + n));
+      nb.set(outBuf.subarray(0, op)); outBuf = nb;
+    }
+  };
+  const bits = n => {
+    while (bitcnt < n) {
+      if (pos >= src.length) throw new Error('data habis');
+      bitbuf |= src[pos++] << bitcnt; bitcnt += 8;
+    }
+    const v = bitbuf & ((1 << n) - 1);
+    bitbuf >>>= n; bitcnt -= n;
+    return v;
+  };
+  const buildTable = lengths => {
+    const counts = new Uint16Array(16), offs = new Uint16Array(16);
+    for (let i = 0; i < lengths.length; i++) counts[lengths[i]]++;
+    counts[0] = 0;
+    for (let i = 1; i < 16; i++) offs[i] = offs[i - 1] + counts[i - 1];
+    const symbols = new Uint16Array(lengths.length);
+    for (let s = 0; s < lengths.length; s++) if (lengths[s]) symbols[offs[lengths[s]]++] = s;
+    return { counts, symbols };
+  };
+  const decodeSym = t => {
+    let code = 0, first = 0, index = 0;
+    for (let len = 1; len < 16; len++) {
+      code |= bits(1);
+      const count = t.counts[len];
+      if (code - count < first) return t.symbols[index + (code - first)];
+      index += count; first += count; first <<= 1; code <<= 1;
+    }
+    throw new Error('kode huffman salah');
+  };
+  const LB = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+  const LE = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+  const DB = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+  const DE = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+  const codes = (lit, dist) => {
+    for (;;) {
+      let sym = decodeSym(lit);
+      if (sym < 256) { ensure(1); outBuf[op++] = sym; }
+      else if (sym === 256) return;
+      else {
+        sym -= 257;
+        if (sym >= 29) throw new Error('panjang salah');
+        const len = LB[sym] + bits(LE[sym]);
+        const ds = decodeSym(dist);
+        const d = DB[ds] + bits(DE[ds]);
+        ensure(len);
+        for (let i = 0; i < len; i++) { outBuf[op] = outBuf[op - d]; op++; }
+      }
+    }
+  };
+  let fixedLit = null, fixedDist = null;
+  const ORDER = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+  let last;
+  do {
+    last = bits(1);
+    const type = bits(2);
+    if (type === 0) {
+      bitbuf = 0; bitcnt = 0;
+      const len = src[pos] | (src[pos + 1] << 8);
+      pos += 4;
+      ensure(len);
+      outBuf.set(src.subarray(pos, pos + len), op); op += len; pos += len;
+    } else if (type === 1) {
+      if (!fixedLit) {
+        const l = [];
+        for (let i = 0; i < 144; i++) l.push(8);
+        for (let i = 144; i < 256; i++) l.push(9);
+        for (let i = 256; i < 280; i++) l.push(7);
+        for (let i = 280; i < 288; i++) l.push(8);
+        fixedLit = buildTable(l);
+        fixedDist = buildTable(new Array(30).fill(5));
+      }
+      codes(fixedLit, fixedDist);
+    } else if (type === 2) {
+      const nlen = bits(5) + 257, ndist = bits(5) + 1, ncode = bits(4) + 4;
+      const cl = new Array(19).fill(0);
+      for (let i = 0; i < ncode; i++) cl[ORDER[i]] = bits(3);
+      const clt = buildTable(cl);
+      const lengths = [];
+      while (lengths.length < nlen + ndist) {
+        const sym = decodeSym(clt);
+        if (sym < 16) lengths.push(sym);
+        else if (sym === 16) { const prev = lengths[lengths.length - 1]; let r = 3 + bits(2); while (r--) lengths.push(prev); }
+        else if (sym === 17) { let r = 3 + bits(3); while (r--) lengths.push(0); }
+        else { let r = 11 + bits(7); while (r--) lengths.push(0); }
+      }
+      codes(buildTable(lengths.slice(0, nlen)), buildTable(lengths.slice(nlen)));
+    } else throw new Error('tipe blok salah');
+  } while (!last);
+  return outBuf.subarray(0, op);
+}
+
+  const KEYS = { cat: 'bk-katalog', pts: 'bk-poin', sel: 'bk-sel', promo: 'bk-promo' };
+  const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+
+  let CAT   = load(KEYS.cat, []);   // [{id,name,cat,merek,v:{Karton:harga,...}}]
+  let PTS   = load(KEYS.pts, []);   // [{name,poin}]
+  let SEL   = load(KEYS.sel, []);   // [id,...]
+  let PROMO = load(KEYS.promo, []); // [{id, lines:[{label,coret,promo}]}]
+
+  const fmt = n => 'Rp' + Math.round(n).toLocaleString('id-ID');
+  const byId = id => CAT.find(p => p.id === id);
+
+  // Dua harga per produk: Karton & Pcs, kalau tidak ada pakai varian lain yang tersedia
+  function getLines(p) {
+    const keys = Object.keys(p.v);
+    const chosen = ['Karton', 'Pcs'].filter(k => keys.includes(k));
+    keys.forEach(k => { if (chosen.length < 2 && !chosen.includes(k)) chosen.push(k); });
+    return chosen.slice(0, 2).map(k => ({ label: k, price: p.v[k] }));
+  }
+  const lineText = p => getLines(p).map(l => l.label + ' ' + fmt(l.price)).join(' · ');
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  // ---------- Clock ----------
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  tick(); setInterval(tick, 10000);
+
+  // ---------- Carousel generik ----------
+  function startCarousel(container, items, render, dotsId, barId) {
+    const dotsEl = document.getElementById(dotsId);
+    const bar = document.getElementById(barId);
+    container.querySelectorAll('.slide').forEach(s => s.remove());
+    dotsEl.innerHTML = '';
+    if (container._timer) clearInterval(container._timer);
+    if (!items.length) {
+      const s = el('div', 'slide on');
+      s.appendChild(el('div', 'empty-msg', 'Belum ada data. Buka halaman #admin untuk import.'));
+      container.insertBefore(s, dotsEl);
+      return;
+    }
+    const slides = items.map(it => {
+      const s = el('div', 'slide');
+      render(s, it);
+      container.insertBefore(s, dotsEl);
+      dotsEl.appendChild(document.createElement('i'));
+      return s;
+    });
+    const dots = Array.from(dotsEl.children);
+    let cur = -1;
+    function show(n) {
+      if (cur >= 0) {
+        slides[cur].classList.remove('on'); slides[cur].classList.add('out'); dots[cur].classList.remove('on');
+        const prev = cur; setTimeout(() => slides[prev].classList.remove('out'), 900);
+      }
+      cur = n; slides[cur].classList.add('on'); dots[cur].classList.add('on');
+      bar.classList.remove('run'); void bar.offsetWidth; bar.classList.add('run');
+    }
+    show(0);
+    if (slides.length > 1) container._timer = setInterval(() => show((cur + 1) % slides.length), 10000);
+  }
+
+  function cellBlock(parent, label, oldPrice, newPrice) {
+    const c = el('div', 'cell');
+    c.appendChild(el('div', 'cl', label));
+    if (oldPrice != null) c.appendChild(el('div', 'old', fmt(oldPrice)));
+    c.appendChild(el('div', 'np', fmt(newPrice)));
+    parent.appendChild(c);
+  }
+
+  function renderHarga(s, p) {
+    s.appendChild(el('div', 'pname', p.name));
+    const pair = el('div', 'pair');
+    getLines(p).forEach(l => {
+      const c = el('div', 'cell');
+      c.appendChild(el('div', 'cl', 'Harga ' + l.label.toLowerCase()));
+      c.appendChild(el('div', 'np', fmt(l.price)));
+      pair.appendChild(c);
+    });
+    s.appendChild(pair);
+  }
+
+  function renderPromo(s, item) {
+    const p = byId(item.id);
+    s.appendChild(el('div', 'pname', p ? p.name : item.id));
+    const pair = el('div', 'pair');
+    item.lines.forEach(l => cellBlock(pair, 'Harga ' + l.label.toLowerCase(), l.coret, l.promo));
+    s.appendChild(pair);
+  }
+
+  function renderTop() {
+    const wrap = document.getElementById('top-list');
+    wrap.innerHTML = '';
+    const top = [...PTS].sort((a, b) => b.poin - a.poin).slice(0, 10);
+    if (!top.length) {
+      wrap.appendChild(el('div', 'empty-msg', 'Belum ada data poin. Import di halaman #admin.'));
+      return;
+    }
+    [top.slice(0, 5), top.slice(5, 10)].forEach(part => {
+      const col = el('div', 'top-col');
+      part.forEach((m, i) => {
+        const rank = top.indexOf(m) + 1;
+        const row = el('div', 'tr');
+        row.appendChild(el('span', 'n', String(rank)));
+        row.appendChild(el('span', 'nm', maskName(m.name)));
+        row.appendChild(el('span', 'pt', m.poin.toLocaleString('id-ID') + ' poin'));
+        col.appendChild(row);
+      });
+      wrap.appendChild(col);
+    });
+  }
+
+  // Nama disamarkan: "Bu Rom Medali" -> "Bu R**", "Mas Rosi Kintelan" -> "Mas R**"
+  const HON = ['bu', 'ibu', 'pak', 'bapak', 'cak', 'mas', 'mbak', 'mbk', 'abah', 'mak'];
+  function maskName(name) {
+    const t = String(name).trim().split(/\s+/);
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    if (HON.includes(t[0].toLowerCase()) && t[1]) return cap(t[0]) + ' ' + t[1].charAt(0).toUpperCase() + '**';
+    return t[0].charAt(0).toUpperCase() + '**';
+  }
+
+  function buildAll() {
+    startCarousel(document.getElementById('carousel'),
+      SEL.map(byId).filter(Boolean), renderHarga, 'dots', 'bar');
+    startCarousel(document.getElementById('promo-carousel'),
+      PROMO.filter(x => byId(x.id)), renderPromo, 'promo-dots', 'promo-bar');
+    renderTop();
+  }
+
+  // ---------- Helper daftar pilih ----------
+  function fillSelect(sel, values) {
+    sel.innerHTML = '';
+    ['Semua', ...values].forEach(v => sel.appendChild(el('option', null, v)));
+  }
+  function uniq(arr) { return [...new Set(arr)].filter(Boolean).sort(); }
+
+  function makeList(cfg) {
+    // cfg: {search, merek, chips, list, count, isChecked, onToggle, extra(row,p)}
+    let cat = 'Semua';
+    const cats = ['Semua', ...uniq(CAT.map(p => p.cat))];
+    const mereks = uniq(CAT.map(p => p.merek));
+    fillSelect(cfg.merek, mereks);
+
+    function renderChips() {
+      cfg.chips.innerHTML = '';
+      cats.forEach(c => {
+        const b = el('button', 'chip' + (c === cat ? ' on' : ''), c);
+        b.onclick = () => { cat = c; renderChips(); renderRows(); };
+        cfg.chips.appendChild(b);
+      });
+    }
+    function renderRows() {
+      const q = cfg.search.value.trim().toLowerCase();
+      const m = cfg.merek.value;
+      const filtered = CAT.filter(p =>
+        (cat === 'Semua' || p.cat === cat) &&
+        (m === 'Semua' || (p.merek || 'Semua') === m) &&
+        p.name.toLowerCase().includes(q));
+      cfg.list.innerHTML = '';
+      filtered.slice(0, 200).forEach(p => {
+        const row = el('label', 'prow2');
+        const cb = el('input'); cb.type = 'checkbox'; cb.checked = cfg.isChecked(p.id);
+        cb.onchange = () => { cfg.onToggle(p, cb.checked); updateCount(filtered.length); if (cfg.refresh) cfg.refresh(p); };
+        row.appendChild(cb);
+        row.appendChild(el('span', 'nm', p.name));
+        row.appendChild(el('span', 'cat', p.merek || p.cat));
+        if (cfg.extra) cfg.extra(row, p);
+        else row.appendChild(el('span', 'pr', lineText(p)));
+        cfg.list.appendChild(row);
+      });
+      if (filtered.length > 200) cfg.list.appendChild(el('div', 'more', 'Menampilkan 200 dari ' + filtered.length + ' produk. Persempit pencarian.'));
+      updateCount(filtered.length);
+    }
+    function updateCount(total) {
+      cfg.count.textContent = cfg.countText();
+    }
+    cfg.search.oninput = renderRows;
+    cfg.merek.onchange = renderRows;
+    renderChips(); renderRows();
+    return { redraw: renderRows, chips: renderChips };
+  }
+
+  // ---------- Pilih harga ----------
+  let pickSel = [];
+  let listSel = null;
+  function openPilih() {
+    pickSel = [...SEL];
+    listSel = makeList({
+      search: document.getElementById('s1'), merek: document.getElementById('m1'),
+      chips: document.getElementById('c1'), list: document.getElementById('l1'),
+      count: document.getElementById('n1'),
+      countText: () => pickSel.length + ' produk dipilih',
+      isChecked: id => pickSel.includes(id),
+      onToggle: (p, on) => {
+        pickSel = on ? [...pickSel.filter(x => x !== p.id), p.id] : pickSel.filter(x => x !== p.id);
+      }
+    });
+  }
+  document.getElementById('b1save').onclick = () => {
+    SEL = pickSel.slice();
+    save(KEYS.sel, SEL);
+    location.hash = '';
+  };
+  document.getElementById('b1clr').onclick = () => { pickSel = []; listSel && listSel.redraw(); };
+
+  // ---------- Promo ----------
+  let pickPromo = [];
+  let listPromo = null;
+  function openPromo() {
+    pickPromo = PROMO.map(x => ({ id: x.id, lines: x.lines.map(l => ({ ...l })) }));
+    const extraRow = (row, p) => {
+      const item = pickPromo.find(x => x.id === p.id);
+      if (!item) { row.appendChild(el('span', 'pr', '')); return; }
+      const box = el('span', 'pline');
+      item.lines.forEach((l, i) => {
+        const wrap = el('label', null, l.label + ' coret');
+        const inC = el('input'); inC.type = 'number'; inC.value = l.coret;
+        inC.oninput = () => { l.coret = Number(inC.value) || 0; };
+        wrap.appendChild(inC);
+        const wrap2 = el('label', null, 'promo');
+        const inP = el('input'); inP.type = 'number'; inP.value = l.promo;
+        inP.oninput = () => { l.promo = Number(inP.value) || 0; };
+        wrap2.appendChild(inP);
+        box.appendChild(wrap); box.appendChild(wrap2);
+      });
+      row.appendChild(box);
+    };
+    listPromo = makeList({
+      search: document.getElementById('s2'), merek: document.getElementById('m2'),
+      chips: document.getElementById('c2'), list: document.getElementById('l2'),
+      count: document.getElementById('n2'),
+      countText: () => pickPromo.length + ' barang promo',
+      isChecked: id => pickPromo.some(x => x.id === id),
+      onToggle: (p, on) => {
+        if (on) {
+          const lines = getLines(p).map(l => ({ label: l.label, coret: l.price, promo: l.price }));
+          pickPromo = [...pickPromo.filter(x => x.id !== p.id), { id: p.id, lines }];
+        } else {
+          pickPromo = pickPromo.filter(x => x.id !== p.id);
+        }
+      },
+      extra: extraRow,
+      refresh: null
+    });
+  }
+  document.getElementById('b2save').onclick = () => {
+    PROMO = pickPromo.map(x => ({ id: x.id, lines: x.lines.map(l => ({ ...l })) }));
+    save(KEYS.promo, PROMO);
+    location.hash = '';
+  };
+  document.getElementById('b2clr').onclick = () => { pickPromo = []; listPromo && listPromo.redraw(); };
+
+  // ---------- Import ----------
+  function readXlsx(file, cb, fail) {
+    const fr = new FileReader();
+    fr.onload = e => {
+      try { cb(xlsxRows(e.target.result)); }
+      catch (err) { fail('File tidak bisa dibaca. Pastikan formatnya .xlsx.'); }
+    };
+    fr.onerror = () => fail('File tidak bisa dibuka.');
+    fr.readAsArrayBuffer(file);
+  }
+  function setStatus(id, msg, err) {
+    const s = document.getElementById(id);
+    s.textContent = msg; s.className = 'status' + (err ? ' err' : '');
+  }
+  function refreshAdmin() {
+    setStatus('st-cat', CAT.length ? CAT.length + ' produk tersimpan' : 'Belum ada katalog');
+    setStatus('st-pts', PTS.length ? PTS.length + ' pelanggan dengan poin tersimpan' : 'Belum ada data pelanggan');
+  }
+
+  document.getElementById('f-cat').onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    readXlsx(file, wb => {
+      const rows = wb;
+      const h = rows.findIndex(r => r.map(x => String(x).trim()).includes('Nama Produk'));
+      if (h < 0) { setStatus('st-cat', 'Kolom "Nama Produk" tidak ditemukan.', true); return; }
+      const head = rows[h].map(x => String(x).trim());
+      const iN = head.indexOf('Nama Produk'), iK = head.indexOf('Kategori'), iM = head.indexOf('Merek'),
+            iV = head.indexOf('Nama Varian'), iH = head.indexOf('Harga Jual');
+      const map = new Map();
+      for (let r = h + 1; r < rows.length; r++) {
+        const row = rows[r];
+        const name = String(row[iN] || '').trim();
+        if (!name) continue;
+        const price = Number(row[iH]) || 0;
+        if (price <= 0) continue;
+        const merek = String(row[iM] || '').trim();
+        const variant = String(row[iV] || '').trim() || 'Satuan';
+        const id = name + '|' + merek;
+        let p = map.get(id);
+        if (!p) {
+          p = { id, name, cat: String(row[iK] || 'Umum').trim() || 'Umum', merek: merek === '-' ? '' : merek, v: {} };
+          map.set(id, p);
+        }
+        p.v[variant] = price;
+      }
+      CAT = [...map.values()];
+      if (!save(KEYS.cat, CAT)) { setStatus('st-cat', 'Data terlalu besar untuk disimpan di tablet.', true); return; }
+      SEL = SEL.filter(id => byId(id));
+      save(KEYS.sel, SEL);
+      PROMO = PROMO.filter(x => byId(x.id));
+      save(KEYS.promo, PROMO);
+      refreshAdmin();
+      setStatus('st-cat', 'Berhasil: ' + CAT.length + ' produk diimport.');
+    }, msg => setStatus('st-cat', msg, true));
+  };
+
+  document.getElementById('f-pts').onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    readXlsx(file, wb => {
+      const rows = wb;
+      const h = rows.findIndex(r => {
+        const t = r.map(x => String(x).trim());
+        return t.includes('Nama Pelanggan') && t.includes('Poin');
+      });
+      if (h < 0) { setStatus('st-pts', 'Kolom "Nama Pelanggan" dan "Poin" tidak ditemukan.', true); return; }
+      const head = rows[h].map(x => String(x).trim());
+      const iN = head.indexOf('Nama Pelanggan'), iP = head.indexOf('Poin');
+      const list = [];
+      for (let r = h + 1; r < rows.length; r++) {
+        const row = rows[r];
+        const name = String(row[iN] || '').trim();
+        const poin = Number(row[iP]) || 0;
+        if (name && poin > 0) list.push({ name, poin });
+      }
+      PTS = list;
+      if (!save(KEYS.pts, PTS)) { setStatus('st-pts', 'Data terlalu besar untuk disimpan di tablet.', true); return; }
+      refreshAdmin();
+      setStatus('st-pts', 'Berhasil: ' + PTS.length + ' pelanggan diimport.');
+    }, msg => setStatus('st-pts', msg, true));
+  };
+
+  document.getElementById('b3clr').onclick = () => {
+    if (!confirm('Hapus semua data katalog, pelanggan, pilihan harga, dan promo di tablet ini?')) return;
+    Object.values(KEYS).forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+    CAT = []; PTS = []; SEL = []; PROMO = [];
+    refreshAdmin();
+  };
+
+  // ---------- Notifikasi pembayaran QRIS ----------
+  let audioCtx = null;
+  function unlockAudio() {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) {}
+  }
+  document.addEventListener('pointerdown', unlockAudio);
+
+  function chime() {
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    [[880, 0], [1320, 0.18]].forEach(([f, dt]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t0 + dt);
+      g.gain.exponentialRampToValueAtTime(0.35, t0 + dt + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.5);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t0 + dt); o.stop(t0 + dt + 0.55);
+    });
+  }
+
+  let payTimer = null;
+  function showPay(nominal) {
+    const box = document.getElementById('pay');
+    const n = Number(nominal) || 0;
+    document.getElementById('pay-n').textContent = 'Rp' + n.toLocaleString('id-ID');
+    box.hidden = false;
+    chime();
+    clearTimeout(payTimer);
+    payTimer = setTimeout(() => { box.hidden = true; }, 6000);
+  }
+
+  // Nomor pembayaran yang sudah ditampilkan disimpan, supaya tidak muncul dua kali
+  function handlePayment(id, nominal) {
+    if (!id) return;
+    const last = load('bk-lastpay', null);
+    if (last === null) { save('bk-lastpay', String(id)); return; }   // pertama kali: jangan tampilkan yang lama
+    if (String(id) === last) return;
+    save('bk-lastpay', String(id));
+    showPay(nominal);
+  }
+
+  let es = null, pollTimer = null;
+  function connectPayment() {
+    const conn = load('bk-conn', {});
+    if (es) { es.close(); es = null; }
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+
+    // Jalur utama: ntfy (push, hampir real-time)
+    if (conn.topic && window.EventSource) {
+      try {
+        es = new EventSource('https://ntfy.sh/' + encodeURIComponent(conn.topic) + '/sse');
+        es.onmessage = e => {
+          try {
+            const d = JSON.parse(e.data);
+            if (d.event !== 'message') return;
+            const parts = String(d.message || '').split('|');
+            if (parts[0] === 'PEMBAYARAN') handlePayment(parts[2] || parts[1], parts[1]);
+          } catch (err) {}
+        };
+      } catch (e) {}
+    }
+
+    // Cadangan: tanya Apps Script tiap 15 detik
+    if (conn.url) {
+      const sep = conn.url.includes('?') ? '&' : '?';
+      const poll = () => fetch(conn.url + sep + 'aksi=terakhir', { cache: 'no-store' })
+        .then(r => r.json()).then(d => d && handlePayment(d.id, d.nominal)).catch(() => {});
+      poll();
+      pollTimer = setInterval(poll, 15000);
+    }
+  }
+
+  document.getElementById('b-conn').onclick = () => {
+    const topic = document.getElementById('c-topic').value.trim();
+    const url = document.getElementById('c-url').value.trim();
+    if (url && !/^https:\/\//.test(url)) { setStatus('st-conn', 'Alamat Apps Script harus diawali https://', true); return; }
+    save('bk-conn', { topic, url });
+    connectPayment();
+    setStatus('st-conn', 'Koneksi disimpan.');
+  };
+
+  // ---------- PIN admin (tekan lama jam 3 detik) ----------
+  const clockEl = document.getElementById('clock');
+  let pinTimer = null;
+  const cancelPin = () => clearTimeout(pinTimer);
+  clockEl.addEventListener('pointerdown', () => { pinTimer = setTimeout(openAdminLogin, 3000); });
+  clockEl.addEventListener('pointerup', cancelPin);
+  clockEl.addEventListener('pointerleave', cancelPin);
+  clockEl.addEventListener('pointercancel', cancelPin);
+  clockEl.addEventListener('contextmenu', e => e.preventDefault());
+
+  function validPin(p) { return /^\d{4,6}$/.test(p); }
+  function openAdminLogin() {
+    const saved = load('bk-pin', null);
+    if (!saved) {
+      const baru = prompt('Buat PIN admin (4 sampai 6 angka):');
+      if (baru === null) return;
+      if (!validPin(baru.trim())) { alert('PIN harus 4 sampai 6 angka.'); return; }
+      save('bk-pin', baru.trim());
+      location.hash = '#admin';
+      return;
+    }
+    const masuk = prompt('Masukkan PIN admin:');
+    if (masuk === null) return;
+    if (masuk.trim() === saved) location.hash = '#admin';
+    else alert('PIN salah.');
+  }
+  document.getElementById('b-pin').onclick = () => {
+    const p = document.getElementById('pin-baru').value.trim();
+    const st = document.getElementById('st-pin');
+    if (!validPin(p)) { st.textContent = 'PIN harus 4 sampai 6 angka.'; st.className = 'status err'; return; }
+    save('bk-pin', p);
+    document.getElementById('pin-baru').value = '';
+    st.textContent = 'PIN berhasil diganti.'; st.className = 'status';
+  };
+
+  // ---------- Routing ----------
+  const SCREENS = { '#pilih': 'scr-pilih', '#promo': 'scr-promo', '#admin': 'scr-admin' };
+  function route() {
+    const id = SCREENS[location.hash];
+    document.getElementById('display').hidden = !!id;
+    ['scr-pilih', 'scr-promo', 'scr-admin'].forEach(s => document.getElementById(s).hidden = s !== id);
+    if (!id) { buildAll(); return; }
+    if (id === 'scr-pilih') openPilih();
+    if (id === 'scr-promo') openPromo();
+    if (id === 'scr-admin') {
+      refreshAdmin();
+      const c = load('bk-conn', {});
+      document.getElementById('c-topic').value = c.topic || '';
+      document.getElementById('c-url').value = c.url || '';
+    }
+  }
+  window.addEventListener('hashchange', route);
+  route();
+  connectPayment();
+</script>
+</body>
+</html>
