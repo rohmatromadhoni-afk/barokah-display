@@ -176,6 +176,21 @@
   .top-cols > .empty-msg { grid-column:1 / -1; align-self:center; text-align:center; }
   .ticker { height:7.5vh; min-height:0; }
   .ticker span { font-size:2.2vh; }
+
+  /* ===== Penyesuaian v3: latar dan kartu seragam, isi harga tidak terpotong ===== */
+  .bg-mesh { background:
+      radial-gradient(circle at 92% 88%, rgba(251,146,60,.85) 0%, transparent 40%),
+      linear-gradient(135deg, #1e40af 0%, #2563eb 45%, #3b82f6 75%, #f59e0b 100%); }
+  .card, .harga, .promo, .top, .info { background:rgba(255,255,255,.16); }
+  .harga .body, .promo .body, .top .body, .info .body { background:transparent; }
+  .body { padding:1vh 2vw; }
+  .pname { font-size:min(3.2vh, 5vw); }
+  .cell-container, .pair { margin-top:.6vh; gap:1.2vw; }
+  .cell { padding:.8vh 1vw; }
+  .cl { font-size:1.8vh; }
+  .np { font-size:min(3.6vh, 5vw); padding:.5vh 1vw; margin-top:.5vh; }
+  .old { font-size:1.6vh; }
+  .slide { inset:0.5vh 1.5vw 1.5vh; }
 </style>
 </head>
 <body>
