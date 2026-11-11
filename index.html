@@ -207,6 +207,18 @@
   .slide { transition:opacity .6s ease, transform .6s ease; will-change:transform, opacity; }
   .ticker span { will-change:transform; }
   .progress i.run { will-change:width; }
+
+  /* ===== Penyesuaian v6: font poin lebih besar, progres bar dihilangkan ===== */
+  .progress { display:none; }
+  .tr { font-size:min(3.1vh, 4.2vw); padding:.6vh 0; }
+  .tr .nm { max-width:100%; }
+
+  /* ===== Penyesuaian v7: isi kartu pelanggan dan info rata kiri ===== */
+  .top .body, .info .body { align-items:stretch; justify-content:flex-start; text-align:left; }
+  .tr { justify-items:start; text-align:left; }
+  .top-cols > .empty-msg { text-align:left; }
+  .info-body { align-items:stretch; text-align:left; }
+  .it { align-items:flex-start; text-align:left; }
 </style>
 </head>
 <body>
