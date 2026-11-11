@@ -231,6 +231,11 @@
   .ticker .track { display:flex; white-space:nowrap; will-change:transform; animation:scrollx 60s linear infinite; }
   .ticker .track span { animation:none; padding-right:0; font-size:2.2vh; font-weight:600; }
   @keyframes scrollx { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+  /* ===== Penyesuaian v13: judul card poin tetap satu baris ===== */
+  .top .head { gap:.8vw; padding-left:1.2vw; padding-right:1.2vw; }
+  .top .head h2 { font-size:min(3.4vh, 3.6vw); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .top .head svg { width:min(3.6vh, 3.4vw); height:min(3.6vh, 3.4vw); }
 </style>
 </head>
 <body>
