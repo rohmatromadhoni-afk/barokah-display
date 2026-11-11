@@ -219,6 +219,18 @@
   .top-cols > .empty-msg { text-align:left; }
   .info-body { align-items:stretch; text-align:left; }
   .it { align-items:flex-start; text-align:left; }
+
+  /* ===== Penyesuaian v9: font kartu pelanggan lebih kecil, info lebih besar ===== */
+  .tr { font-size:min(2.6vh, 3.4vw); padding:.4vh 0; }
+  .it b { font-size:3vh; }
+  .it span { font-size:2.5vh; line-height:1.4; }
+  .info-body { gap:2.2vh; }
+
+  /* ===== Penyesuaian v11: running text tersambung tanpa putus ===== */
+  .ticker { padding:0; }
+  .ticker .track { display:flex; white-space:nowrap; will-change:transform; animation:scrollx 60s linear infinite; }
+  .ticker .track span { animation:none; padding-right:0; font-size:2.2vh; font-weight:600; }
+  @keyframes scrollx { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 </style>
 </head>
 <body>
@@ -275,7 +287,7 @@
     </section>
   </div>
 
-  <div class="ticker"><span>Terima kasih sudah berbelanja dan menjadi pelanggan setia Toko Barokah Karangsari &nbsp;● &nbsp;Dan Allah sebaik-baik pemberi rezeki - Al Jumu'ah:11</span></div>
+  <div class="ticker"><div class="track"><span>Terima kasih sudah berbelanja dan menjadi pelanggan setia Toko Barokah Karangsari &nbsp;● &nbsp;Dan Allah sebaik-baik pemberi rezeki - Al Jumu'ah:11&nbsp;&nbsp;&nbsp;◆&nbsp;&nbsp;&nbsp;</span><span>Terima kasih sudah berbelanja dan menjadi pelanggan setia Toko Barokah Karangsari &nbsp;● &nbsp;Dan Allah sebaik-baik pemberi rezeki - Al Jumu'ah:11&nbsp;&nbsp;&nbsp;◆&nbsp;&nbsp;&nbsp;</span><span>Terima kasih sudah berbelanja dan menjadi pelanggan setia Toko Barokah Karangsari &nbsp;● &nbsp;Dan Allah sebaik-baik pemberi rezeki - Al Jumu'ah:11&nbsp;&nbsp;&nbsp;◆&nbsp;&nbsp;&nbsp;</span><span>Terima kasih sudah berbelanja dan menjadi pelanggan setia Toko Barokah Karangsari &nbsp;● &nbsp;Dan Allah sebaik-baik pemberi rezeki - Al Jumu'ah:11&nbsp;&nbsp;&nbsp;◆&nbsp;&nbsp;&nbsp;</span></div></div>
 </div>
 
 <!-- ============ PILIH HARGA (#pilih) ============ -->
@@ -980,38 +992,58 @@ function inflateRaw(src) {
     handlePayment(d.id, d.nominal);
   }
 
-  let es = null, pollTimer = null;
+  let es = null, pollTimer = null, watchdog = null, lastEvent = 0, connConf = {};
+
+  // Sambung ke ntfy. Pesan yang terlewat diambil lewat parameter since.
+  function ntfyConnect() {
+    if (!connConf.topic || !window.EventSource) return;
+    if (es) { es.close(); es = null; }
+    const since = load('bk-ntfy-since', 0);
+    const url = 'https://ntfy.sh/' + encodeURIComponent(connConf.topic) + '/sse' + (since ? '?since=' + since : '');
+    lastEvent = Date.now();
+    es = new EventSource(url);
+    es.onopen = () => { lastEvent = Date.now(); setStatus('st-conn', 'Tersambung ke topik ntfy: ' + connConf.topic); };
+    es.onmessage = e => {
+      lastEvent = Date.now();   // keepalive dari ntfy juga dihitung, supaya koneksi yang masih hidup tidak dianggap mati
+      try {
+        const d = JSON.parse(e.data);
+        if (d.event !== 'message') return;
+        if (d.time) save('bk-ntfy-since', d.time);
+        if (d.time && (Date.now() / 1000 - d.time) > 120) return;   // pesan lama yang terkirim ulang: jangan tampilkan pop-up
+        const parts = String(d.message || '').split('|');
+        if (parts[0] === 'PEMBAYARAN') handlePayment(d.id || parts[2] || parts[1], parts[1]);
+      } catch (err) {}
+    };
+    es.onerror = () => { setStatus('st-conn', 'Koneksi ntfy terputus, mencoba lagi...', true); };
+  }
+
+  // Cek setiap 30 detik: kalau tidak ada data lebih dari 90 detik, sambung ulang
+  function ntfyWatchdog() {
+    if (!connConf.topic) return;
+    if (!es || es.readyState === 2 || Date.now() - lastEvent > 90000) ntfyConnect();
+  }
+
   function connectPayment() {
-    const conn = load('bk-conn', {});
+    connConf = load('bk-conn', {});
     if (es) { es.close(); es = null; }
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    if (watchdog) { clearInterval(watchdog); watchdog = null; }
 
-    // Jalur utama: ntfy (push, hampir real-time)
-    if (conn.topic && window.EventSource) {
-      try {
-        es = new EventSource('https://ntfy.sh/' + encodeURIComponent(conn.topic) + '/sse');
-        es.onopen = () => setStatus('st-conn', 'Tersambung ke topik ntfy: ' + conn.topic);
-        es.onerror = () => setStatus('st-conn', 'Koneksi ntfy terputus, mencoba lagi...', true);
-        es.onmessage = e => {
-          try {
-            const d = JSON.parse(e.data);
-            if (d.event !== 'message') return;
-            const parts = String(d.message || '').split('|');
-            if (parts[0] === 'PEMBAYARAN') handlePayment(parts[2] || parts[1], parts[1]);
-          } catch (err) {}
-        };
-      } catch (e) {}
-    }
+    ntfyConnect();
+    watchdog = setInterval(ntfyWatchdog, 30000);
 
     // Cadangan: tanya Apps Script tiap 15 detik
-    if (conn.url) {
-      const sep = conn.url.includes('?') ? '&' : '?';
-      const poll = () => fetch(conn.url + sep + 'aksi=terakhir', { cache: 'no-store' })
+    if (connConf.url) {
+      const sep = connConf.url.includes('?') ? '&' : '?';
+      const poll = () => fetch(connConf.url + sep + 'aksi=terakhir', { cache: 'no-store' })
         .then(r => r.json()).then(pollPayment).catch(() => { setStatus('st-conn', 'Cadangan Apps Script belum bisa dihubungi.', true); });
       poll();
       pollTimer = setInterval(poll, 15000);
     }
   }
+
+  // Saat layar dinyalakan lagi atau tab kembali aktif, cek koneksi langsung
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) ntfyWatchdog(); });
 
   document.getElementById('b-conn').onclick = () => {
     const topic = document.getElementById('c-topic').value.trim();
